@@ -8,7 +8,7 @@ from skimage.feature import hog
 
 KMEANS_ITERATIONS = 100
 NR_CLUSTERS = 10
-HOG_SIZE = 144
+HOG_SIZE = 36
 VOCABULARY_SIZE = 300
 KEY_POINT_SIZE = 32
 EDGETHRESHOLD = 20
@@ -31,15 +31,15 @@ def compute_descriptors(img : np.array):
         out = []
         for i in range(0, height, 16):
           for j in range(0, width, 16):
-            out.append(np.array(hog(img[i:i+16, j:j+16], orientations=9, pixels_per_cell=(4, 4),
-              cells_per_block=(4, 4), feature_vector=True)))
+            out.append(np.array(hog(img[i:i+16, j:j+16], orientations=9, pixels_per_cell=(8, 8),
+              cells_per_block=(2, 2), feature_vector=True)))
         return np.vstack(out)
     descriptors = np.zeros(shape=(len(keypoints), HOG_SIZE))
     for idx, kp in enumerate(keypoints):
         y, x, size = round(kp.pt[0]), round(kp.pt[1]), round(kp.size)
         select_window = img[x - int(size / 2)  : x + int(size / 2), y - int(size / 2) : y + int(size / 2)]
         descriptors[idx] = np.array(hog(select_window[0:16, 0:16], orientations=9,
-                               pixels_per_cell=(4, 4), cells_per_block=(4, 4), feature_vector=True))
+                               pixels_per_cell=(8, 8), cells_per_block=(2, 2), feature_vector=True))
     return descriptors
 
 def compute_vocabulary(dataloader, nr_features):
@@ -53,8 +53,8 @@ def compute_vocabulary(dataloader, nr_features):
     descriptors = np.vstack(descriptors)
     descriptors = descriptors[torch.randperm(len(descriptors))]
     vocabulary.append(kmeans.fit(descriptors[:LIMIT]).cluster_centers_)
-    if (idx % 30 == 0):
-       print("a ajuns la eoca:", idx)
+    if (idx % 100 == 0):
+       print("a ajuns la epoca:", idx)
   return np.vstack(vocabulary)
 
 def return_features_image(img : np.array, vocabulary):
@@ -66,12 +66,10 @@ def return_features_image(img : np.array, vocabulary):
     return out
 
 
-def create_initial_features(dataloader, vocabulary, batch_size : int, nr_batches : int):
+def create_initial_features(dataloader, vocabulary, batch_size : int):
     features = []
     all_labels = []
     for idx, (images, labels) in enumerate(dataloader):
-        if (idx == nr_batches):
-          break
         current_features = np.zeros(shape=(batch_size, vocabulary.shape[0]))
         for idx, img in enumerate(convert_fashion_tensor_to_np(images)):
             current_features[idx] = return_features_image(img, vocabulary)
@@ -103,10 +101,12 @@ def split_data_in_training_validation(X_train, y_train, fashion_keys, split_fact
 
 
 
-def compute_attributes(vocabulary, train_dataloader, test_dataloader, batch_size):
-    initials_train_features, all_train_labels = create_initial_features(train_dataloader, vocabulary, batch_size, 10000)
+def compute_attributes(vocabulary, train_dataloader, test_dataloader, batch_size, fashion_keys, split_factor):
+    initials_train_features, all_train_labels = create_initial_features(train_dataloader, vocabulary, batch_size)
     print(initials_train_features.shape, all_train_labels.shape)
-    X_test, y_test = create_initial_features(test_dataloader, vocabulary, batch_size, 10000)
+    X_test, y_test = create_initial_features(test_dataloader, vocabulary, batch_size)
     print(X_test.shape, y_test.shape)
-    X_train, y_train, X_validation, y_validation = split_data_in_training_validation(initials_train_features, all_train_labels)
+    X_train, y_train, X_validation, y_validation = split_data_in_training_validation(initials_train_features, all_train_labels, fashion_keys, split_factor)
     return X_train, y_train, X_validation, y_validation, X_test, y_test
+
+
