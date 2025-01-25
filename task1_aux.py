@@ -11,7 +11,7 @@ NR_CLUSTERS = 10
 HOG_SIZE = 36
 VOCABULARY_SIZE = 300
 KEY_POINT_SIZE = 32
-EDGETHRESHOLD = 20
+EDGETHRESHOLD = 25
 
 sift = cv2.SIFT_create()
 orb = cv2.ORB_create(nfeatures=100, edgeThreshold=EDGETHRESHOLD, patchSize = KEY_POINT_SIZE)
@@ -66,11 +66,11 @@ def return_features_image(img : np.array, vocabulary):
     return out
 
 
-def create_initial_features(dataloader, vocabulary, batch_size : int):
+def create_initial_features(dataloader, vocabulary):
     features = []
     all_labels = []
-    for idx, (images, labels) in enumerate(dataloader):
-        current_features = np.zeros(shape=(batch_size, vocabulary.shape[0]))
+    for (images, labels) in dataloader:
+        current_features = np.zeros(shape=(len(images), vocabulary.shape[0]))
         for idx, img in enumerate(convert_fashion_tensor_to_np(images)):
             current_features[idx] = return_features_image(img, vocabulary)
         features.append(current_features)
@@ -101,10 +101,10 @@ def split_data_in_training_validation(X_train, y_train, fashion_keys, split_fact
 
 
 
-def compute_attributes(vocabulary, train_dataloader, test_dataloader, batch_size, fashion_keys, split_factor):
-    initials_train_features, all_train_labels = create_initial_features(train_dataloader, vocabulary, batch_size)
+def compute_attributes(vocabulary, train_dataloader, test_dataloader, fashion_keys, split_factor):
+    initials_train_features, all_train_labels = create_initial_features(train_dataloader, vocabulary)
     print(initials_train_features.shape, all_train_labels.shape)
-    X_test, y_test = create_initial_features(test_dataloader, vocabulary, batch_size)
+    X_test, y_test = create_initial_features(test_dataloader, vocabulary)
     print(X_test.shape, y_test.shape)
     X_train, y_train, X_validation, y_validation = split_data_in_training_validation(initials_train_features, all_train_labels, fashion_keys, split_factor)
     return X_train, y_train, X_validation, y_validation, X_test, y_test
