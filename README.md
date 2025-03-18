@@ -16,7 +16,6 @@ This project focuses on designing neural network architectures to automate both 
   - [Convolutional Neural Network (CNN)](#convolutional-neural-network-cnn)
 - [Training and Evaluation](#training-and-evaluation)
 - [Results](#results)
-- [References](#references)
 
 ## Project Overview
 
