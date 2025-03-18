@@ -80,10 +80,10 @@ A CNN is designed to automatically extract spatial features from images:
 - **Evaluation Metrics:** Accuracy, precision, recall, and F1-score on both training and testing sets.
 
 ## Results
-Long story short the worst results were obtained on the feature based MLP.
-The MLP model applied directly on the input images was the fastest with a pretty solid accuracy about >85%, but prone 
+- Long story short the worst results were obtained on the feature based MLP.
+- The MLP model applied directly on the input images was the fastest with a pretty solid accuracy about >85%, but prone 
 to overfitting.
-The CNN approach following a typological residual network architecture was the slowest, about twice as slow as the MLP approach
+- The CNN approach following a typological residual network architecture was the slowest, about twice as slow as the MLP approach
 the accuracy was similar but more robust overall for unseen data and less likely to lead to overfitting, or wild spiking in the
 validation accuracy during training.
 
